@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRA2 Calculateur de Risque</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
+    body {
+        background-color: #121212;
+        color: #f0f0f0;
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .container {
+        max-width: 800px;
+        width: 100%;
+        margin-bottom: 30px;
+    }
+
+    .results-container {
+        display: flex;
+        width: 100%;
+        border: 2px solid #d4af37;
+        background-color: #1e1e1e;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.8);
+    }
+
+    .results-half {
+        flex: 1;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        border-right: 2px solid #d4af37;
+    }
+    .results-half:last-child { border-right: none; }
+
+    .header-cell {
+        grid-column: span 3;
+        text-align: center;
+        background-color: #2a2a2a;
+        border-bottom: 2px solid #d4af37;
+        padding: 10px;
+        font-family: 'Oswald', sans-serif;
+        font-size: 1.2em;
+        color: #d4af37;
+        text-transform: uppercase;
+    }
+
+    .cell {
+        padding: 10px;
+        border-bottom: 1px solid #444;
+        border-right: 1px solid #444;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Oswald', sans-serif;
+    }
+    .cell:nth-child(3n) { border-right: none; }
+    .row-last .cell { border-bottom: none; }
+    
+    .cell-target { font-weight: bold; background-color: #2a2a2a; color: #fff; }
+    .cell-label { text-transform: uppercase; font-weight: bold; }
+    .cell-value { font-family: 'Roboto', sans-serif; font-weight: bold; font-size: 1.2em; }
+
+    .controls-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        border: 2px solid #4b0082;
+        background-color: #1e1e1e;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.8);
+    }
+
+    .ctrl-cell {
+        border-bottom: 1px solid #444;
+        border-right: 1px solid #444;
+        padding: 15px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    .ctrl-cell:nth-child(4n), .span-4, .span-2:nth-child(even) { border-right: none; }
+    
+    .span-2 { grid-column: span 2; }
+    .span-4 { grid-column: span 4; }
+    .no-bottom-border { border-bottom: none; }
+
+    .ctrl-label {
+        font-family: 'Oswald', sans-serif;
+        font-size: 1.2em;
+        text-transform: uppercase;
+        color: #fff;
+        font-weight: bold;
+    }
+    
+    .ctrl-badge {
+        font-family: 'Oswald', sans-serif;
+        font-size: 1.2em;
+        font-weight: bold;
+        text-transform: uppercase;
+        background-color: transparent;
+        transition: color 0.3s;
+    }
+
+    input[type="number"] {
+        width: 100%;
+        max-width: 60px;
+        background-color: #121212;
+        color: #d4af37;
+        border: 1px solid #d4af37;
+        text-align: center;
+        font-family: 'Oswald', sans-serif;
+        font-size: 1.2em;
+        padding: 5px;
+    }
+
+    input[type="range"] {
+        width: 90%;
+        transition: accent-color 0.3s;
+    }
+</style>
+</head>
+<body>
+
+<div class="container results-container">
+    <div class="results-half">
+        <div class="header-cell">Chance de Succes</div>
+        <div class="cell cell-target">2+</div><div class="cell cell-label" style="color: #32cd32;">Facile</div><div class="cell cell-value" id="succ2">0%</div>
+        <div class="cell cell-target">4+</div><div class="cell cell-label" style="color: #ffd700;">Difficile</div><div class="cell cell-value" id="succ4">0%</div>
+        <div class="cell cell-target">6+</div><div class="cell cell-label" style="color: #ff4c4c;">Ardue</div><div class="cell cell-value" id="succ6">0%</div>
+        <div class="cell cell-target row-last">8+</div><div class="cell cell-label row-last" style="color: #ba55d3;">Extreme</div><div class="cell cell-value row-last" id="succ8">0%</div>
+    </div>
+    <div class="results-half">
+        <div class="header-cell">Complication</div>
+        <div class="cell cell-target">0</div><div class="cell cell-label" style="color: #32cd32;">Aucune</div><div class="cell cell-value" id="fail0">0%</div>
+        <div class="cell cell-target">1+</div><div class="cell cell-label" style="color: #ffd700;">Mineure</div><div class="cell cell-value" id="fail1">0%</div>
+        <div class="cell cell-target">2+</div><div class="cell cell-label" style="color: #ff4c4c;">Critique</div><div class="cell cell-value" id="fail2">0%</div>
+        <div class="cell cell-target row-last">3+</div><div class="cell cell-label row-last" style="color: #ba55d3;">Désastre</div><div class="cell cell-value row-last" id="fail3">0%</div>
+    </div>
+</div>
+
+<div class="container controls-grid">
+    <div class="ctrl-cell span-2 ctrl-label">Réserve de dés</div>
+    <div class="ctrl-cell ctrl-badge" id="poolLabel">Débutant</div>
+    <div class="ctrl-cell"><input type="number" id="poolBox" min="1" max="16" value="5"></div>
+    
+    <div class="ctrl-cell span-4" style="background-color: #222;"><input type="range" id="poolSlider" min="1" max="16" value="5"></div>
+
+    <div class="ctrl-cell ctrl-label" style="font-size: 1em;">Réduction<br>de Risque</div>
+    <div class="ctrl-cell"><input type="number" id="rrBox" min="0" max="3" value="0"></div>
+    <div class="ctrl-cell ctrl-label">Situation</div>
+    <div class="ctrl-cell ctrl-badge" id="sitLabel">Neutre</div>
+
+    <div class="ctrl-cell span-2" style="background-color: #222;"><input type="range" id="rrSlider" min="0" max="3" value="0"></div>
+    <div class="ctrl-cell span-2" style="background-color: #222; border-right: none;"><input type="range" id="sitSlider" min="1" max="3" value="2"></div>
+
+    <div class="ctrl-cell span-2 ctrl-label">Dés de risques</div>
+    <div class="ctrl-cell ctrl-badge" id="riskLabel">Normal</div>
+    <div class="ctrl-cell"><input type="number" id="riskBox" min="0" max="16" value="2"></div>
+
+    <div class="ctrl-cell span-4 no-bottom-border" style="background-color: #222;"><input type="range" id="riskPercentSlider" min="0" max="100" value="40"></div>
+</div>
+
+<script>
+    const poolSlider = document.getElementById('poolSlider');
+    const poolBox = document.getElementById('poolBox');
+    const poolLabel = document.getElementById('poolLabel');
+    
+    const rrSlider = document.getElementById('rrSlider');
+    const rrBox = document.getElementById('rrBox');
+    
+    const sitSlider = document.getElementById('sitSlider');
+    const sitLabel = document.getElementById('sitLabel');
+    
+    const riskPercentSlider = document.getElementById('riskPercentSlider');
+    const riskBox = document.getElementById('riskBox');
+    const riskLabel = document.getElementById('riskLabel');
+
+    const COLOR_MAP = {
+        'Black': '#aaaaaa', // Light Grey for Dark Mode readability
+        'Blue': '#4da6ff',
+        'Green': '#32cd32',
+        'Yellow': '#ffd700',
+        'Red': '#ff4c4c',
+        'Purple': '#ba55d3'
+    };
+
+    function syncDirect(slider, box) {
+        slider.addEventListener('input', () => { box.value = slider.value; update(); });
+        box.addEventListener('input', () => { slider.value = box.value; update(); });
+    }
+    syncDirect(poolSlider, poolBox);
+    syncDirect(rrSlider, rrBox);
+    sitSlider.addEventListener('input', update);
+
+    riskPercentSlider.addEventListener('input', () => {
+        let pool = parseInt(poolBox.value);
+        riskBox.value = Math.round((parseInt(riskPercentSlider.value) / 100) * pool);
+        update();
+    });
+
+    riskBox.addEventListener('input', () => {
+        let pool = parseInt(poolBox.value);
+        let val = parseInt(riskBox.value);
+        if (val > pool) { val = pool; riskBox.value = pool; }
+        riskPercentSlider.value = Math.round((val / pool) * 100);
+        update();
+    });
+
+    function applyResultColor(el, color) {
+        el.className = 'cell-value';
+        el.style.color = COLOR_MAP[color] || color;
+    }
+
+    function applyLabelAndSliderColor(labelEl, sliderEl, colorStr) {
+        labelEl.className = 'ctrl-cell ctrl-badge';
+        labelEl.style.color = COLOR_MAP[colorStr] || colorStr;
+        sliderEl.style.accentColor = COLOR_MAP[colorStr] || colorStr;
+    }
+
+    function getSuccessColor(p) {
+        if(p <= 3) return 'Black';
+        if(p <= 15) return 'Purple';
+        if(p <= 33) return 'Red';
+        if(p <= 66) return 'Yellow';
+        if(p <= 85) return 'Green';
+        return 'Blue';
+    }
+
+    function getFailColor(p) {
+        if(p <= 3) return 'Black';
+        if(p <= 10) return 'Blue';
+        if(p <= 20) return 'Green';
+        if(p <= 40) return 'Yellow';
+        if(p <= 60) return 'Red';
+        return 'Purple';
+    }
+
+    function nCr(n, k) {
+        if (k < 0 || k > n) return 0;
+        let c = 1;
+        for (let i = 1; i <= k; i++) c = c * (n - i + 1) / i;
+        return c;
+    }
+    function binom(n, k, p) {
+        return nCr(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k);
+    }
+
+    function update() {
+        let pool = parseInt(poolBox.value);
+        let rr = parseInt(rrBox.value);
+        let risk = parseInt(riskBox.value);
+        
+        if (risk > pool) { risk = pool; riskBox.value = pool; riskPercentSlider.value = 100; } 
+        else { riskPercentSlider.value = Math.round((risk / pool) * 100); }
+
+        // Dice Pool Labels & Slider Color
+        let poolColor = 'Black';
+        if (pool <= 3) { poolLabel.innerText = "Incompétent"; poolColor = "Black"; }
+        else if (pool <= 6) { poolLabel.innerText = "Débutant"; poolColor = "Purple"; }
+        else if (pool <= 8) { poolLabel.innerText = "Compétent"; poolColor = "Red"; }
+        else if (pool <= 11) { poolLabel.innerText = "Pro"; poolColor = "Yellow"; }
+        else if (pool <= 14) { poolLabel.innerText = "Elite"; poolColor = "Green"; }
+        else { poolLabel.innerText = "Dieu"; poolColor = "Blue"; }
+        applyLabelAndSliderColor(poolLabel, poolSlider, poolColor);
+
+        // RR Slider Color Mapping
+        const rrColor = rr === 0 ? "Red" : rr === 1 ? "Yellow" : rr === 2 ? "Green" : "Blue";
+        rrSlider.style.accentColor = COLOR_MAP[rrColor];
+
+        // Situation Labels & Slider Color
+        let sit = parseInt(sitSlider.value);
+        let p_succ = (sit === 3) ? 3/6 : (sit === 2) ? 2/6 : 1/6;
+        let sitColor = (sit === 3) ? "Green" : (sit === 2) ? "Black" : "Red";
+        sitLabel.innerText = (sit === 3) ? "Avantage" : (sit === 2) ? "Neutre" : "Désavantage";
+        applyLabelAndSliderColor(sitLabel, sitSlider, sitColor);
+
+        // Risk Level Matrix & Slider Color
+        let rLbl = "Aucun", rCol = "Black";
+        if (rr === 0) {
+            if (risk === 0) { rLbl = "Aucun"; rCol = "Black"; }
+            else if (risk === 1) { rLbl = "Faible"; rCol = "Blue"; }
+            else if (risk <= 3) { rLbl = "Normal"; rCol = "Green"; }
+            else if (risk <= 5) { rLbl = "Fort"; rCol = "Yellow"; }
+            else { rLbl = "Extreme"; rCol = "Red"; }
+        } else if (rr === 1) {
+            if (risk <= 1) { rLbl = "Aucun"; rCol = "Black"; }
+            else if (risk <= 3) { rLbl = "Faible"; rCol = "Blue"; }
+            else if (risk <= 6) { rLbl = "Normal"; rCol = "Green"; }
+            else if (risk <= 9) { rLbl = "Fort"; rCol = "Yellow"; }
+            else { rLbl = "Extreme"; rCol = "Red"; }
+        } else if (rr === 2) {
+            if (risk <= 2) { rLbl = "Aucun"; rCol = "Black"; }
+            else if (risk <= 7) { rLbl = "Faible"; rCol = "Blue"; }
+            else if (risk <= 10) { rLbl = "Normal"; rCol = "Green"; }
+            else if (risk <= 12) { rLbl = "Fort"; rCol = "Yellow"; }
+            else { rLbl = "Extreme"; rCol = "Red"; }
+        } else if (rr === 3) {
+            if (risk <= 3) { rLbl = "Aucun"; rCol = "Black"; }
+            else if (risk <= 11) { rLbl = "Faible"; rCol = "Blue"; }
+            else if (risk <= 14) { rLbl = "Normal"; rCol = "Green"; }
+            else { rLbl = "Fort"; rCol = "Yellow"; } 
+        }
+        riskLabel.innerText = rLbl;
+        applyLabelAndSliderColor(riskLabel, riskPercentSlider, rCol);
+
+        // Calculate Success Probabilities
+        let std = pool - risk;
+        let pTotalSucc = {};
+        for(let s=0; s<=std; s++) {
+            let ps = binom(std, s, p_succ);
+            for(let r=0; r<=risk; r++) {
+                let pr = binom(risk, r, p_succ);
+                let tS = s + (r * 2);
+                pTotalSucc[tS] = (pTotalSucc[tS] || 0) + (ps * pr);
+            }
+        }
+
+        let cS = {2:0, 4:0, 6:0, 8:0};
+        for (let v in pTotalSucc) {
+            v = parseInt(v);
+            if (v>=2) cS[2]+=pTotalSucc[v]; if (v>=4) cS[4]+=pTotalSucc[v];
+            if (v>=6) cS[6]+=pTotalSucc[v]; if (v>=8) cS[8]+=pTotalSucc[v];
+        }
+
+        const domSucc2 = document.getElementById('succ2');
+        const domSucc4 = document.getElementById('succ4');
+        const domSucc6 = document.getElementById('succ6');
+        const domSucc8 = document.getElementById('succ8');
+
+        domSucc2.innerText = (cS[2]*100).toFixed(1) + "%"; applyResultColor(domSucc2, getSuccessColor(cS[2]*100));
+        domSucc4.innerText = (cS[4]*100).toFixed(1) + "%"; applyResultColor(domSucc4, getSuccessColor(cS[4]*100));
+        domSucc6.innerText = (cS[6]*100).toFixed(1) + "%"; applyResultColor(domSucc6, getSuccessColor(cS[6]*100));
+        domSucc8.innerText = (cS[8]*100).toFixed(1) + "%"; applyResultColor(domSucc8, getSuccessColor(cS[8]*100));
+
+        // Calculate Cumulative Failure Probabilities (Complications)
+        let fP = {0:0, 1:0, 2:0, 3:0};
+        for (let f=0; f<=risk; f++) {
+            let pf = binom(risk, f, 1/6);
+            let nF = Math.max(0, f - rr);
+            if (nF === 0) fP[0] += pf;
+            if (nF >= 1) fP[1] += pf; // Cumulative 1+
+            if (nF >= 2) fP[2] += pf; // Cumulative 2+
+            if (nF >= 3) fP[3] += pf; // Cumulative 3+
+        }
+
+        const domFail0 = document.getElementById('fail0');
+        const domFail1 = document.getElementById('fail1');
+        const domFail2 = document.getElementById('fail2');
+        const domFail3 = document.getElementById('fail3');
+
+        domFail0.innerText = (fP[0]*100).toFixed(1) + "%"; applyResultColor(domFail0, getSuccessColor(fP[0]*100));
+        domFail1.innerText = (fP[1]*100).toFixed(1) + "%"; applyResultColor(domFail1, getFailColor(fP[1]*100));
+        domFail2.innerText = (fP[2]*100).toFixed(1) + "%"; applyResultColor(domFail2, getFailColor(fP[2]*100));
+        domFail3.innerText = (fP[3]*100).toFixed(1) + "%"; applyResultColor(domFail3, getFailColor(fP[3]*100));
+    }
+    update();
+</script>
+</body>
+</html>
