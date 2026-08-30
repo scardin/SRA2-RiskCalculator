@@ -21,7 +21,24 @@
     .container {
         max-width: 800px;
         width: 100%;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
+    }
+    
+    .title-container {
+        text-align: center;
+        background-color: #1e1e1e;
+        border-top: 4px solid #d4af37;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.8);
+        padding: 15px 20px;
+    }
+
+    h1.main-title {
+        font-family: 'Oswald', sans-serif;
+        color: #d4af37;
+        text-transform: uppercase;
+        padding-bottom: 10px;
+        margin: 0;
+        letter-spacing: 1px;
     }
 
     .results-container {
@@ -47,7 +64,7 @@
         border-bottom: 2px solid #d4af37;
         padding: 10px;
         font-family: 'Oswald', sans-serif;
-        font-size: 1.2em;
+        font-size: 1.0em;
         color: #d4af37;
         text-transform: uppercase;
     }
@@ -65,8 +82,15 @@
     .row-last .cell { border-bottom: none; }
     
     .cell-target { font-weight: bold; background-color: #2a2a2a; color: #fff; }
-    .cell-label { text-transform: uppercase; font-weight: bold; }
-    .cell-value { font-family: 'Roboto', sans-serif; font-weight: bold; font-size: 1.2em; }
+    .cell-label { text-transform: uppercase; font-weight: bold; justify-content: flex-start; padding-left: 15px; }
+    .cell-value { 
+        font-family: 'Roboto', sans-serif; 
+        font-weight: bold; 
+        font-size: 1.2em;
+        align-items: center;
+        justify-content: center; 
+        text-align: center;
+    }
 
     .controls-grid {
         display: grid;
@@ -101,7 +125,7 @@
     
     .ctrl-badge {
         font-family: 'Oswald', sans-serif;
-        font-size: 1.2em;
+        font-size: 1.0em;
         font-weight: bold;
         text-transform: uppercase;
         background-color: transparent;
@@ -122,22 +146,25 @@
 
     input[type="range"] {
         width: 90%;
+        background: transparent;
         transition: accent-color 0.3s;
     }
 </style>
 </head>
 <body>
 
+<h1 class="main-title">SRA2: Planificateur</h1>
+
 <div class="container results-container">
     <div class="results-half">
-        <div class="header-cell">Chance de Succes</div>
+        <div class="header-cell">% Réussite</div>
         <div class="cell cell-target">2+</div><div class="cell cell-label" style="color: #32cd32;">Facile</div><div class="cell cell-value" id="succ2">0%</div>
         <div class="cell cell-target">4+</div><div class="cell cell-label" style="color: #ffd700;">Difficile</div><div class="cell cell-value" id="succ4">0%</div>
         <div class="cell cell-target">6+</div><div class="cell cell-label" style="color: #ff4c4c;">Ardue</div><div class="cell cell-value" id="succ6">0%</div>
         <div class="cell cell-target row-last">8+</div><div class="cell cell-label row-last" style="color: #ba55d3;">Extreme</div><div class="cell cell-value row-last" id="succ8">0%</div>
     </div>
     <div class="results-half">
-        <div class="header-cell">Complication</div>
+        <div class="header-cell">% Complication</div>
         <div class="cell cell-target">0</div><div class="cell cell-label" style="color: #32cd32;">Aucune</div><div class="cell cell-value" id="fail0">0%</div>
         <div class="cell cell-target">1+</div><div class="cell cell-label" style="color: #ffd700;">Mineure</div><div class="cell cell-value" id="fail1">0%</div>
         <div class="cell cell-target">2+</div><div class="cell cell-label" style="color: #ff4c4c;">Critique</div><div class="cell cell-value" id="fail2">0%</div>
@@ -150,21 +177,21 @@
     <div class="ctrl-cell ctrl-badge" id="poolLabel">Débutant</div>
     <div class="ctrl-cell"><input type="number" id="poolBox" min="1" max="16" value="5"></div>
     
-    <div class="ctrl-cell span-4" style="background-color: #222;"><input type="range" id="poolSlider" min="1" max="16" value="5"></div>
+    <div class="ctrl-cell span-4" style="background-color: #222;"><input type="range" id="poolSlider" min="1" max="16" step="1" value="5"></div>
 
     <div class="ctrl-cell ctrl-label" style="font-size: 1em;">Réduction<br>de Risque</div>
     <div class="ctrl-cell"><input type="number" id="rrBox" min="0" max="3" value="0"></div>
     <div class="ctrl-cell ctrl-label">Situation</div>
     <div class="ctrl-cell ctrl-badge" id="sitLabel">Neutre</div>
 
-    <div class="ctrl-cell span-2" style="background-color: #222;"><input type="range" id="rrSlider" min="0" max="3" value="0"></div>
-    <div class="ctrl-cell span-2" style="background-color: #222; border-right: none;"><input type="range" id="sitSlider" min="1" max="3" value="2"></div>
+    <div class="ctrl-cell span-2" style="background-color: #222;"><input type="range" id="rrSlider" min="0" max="3" step="1" value="0"></div>
+    <div class="ctrl-cell span-2" style="background-color: #222; border-right: none;"><input type="range" id="sitSlider" min="1" max="3" step="1" value="2"></div>
 
     <div class="ctrl-cell span-2 ctrl-label">Dés de risques</div>
     <div class="ctrl-cell ctrl-badge" id="riskLabel">Normal</div>
     <div class="ctrl-cell"><input type="number" id="riskBox" min="0" max="16" value="2"></div>
 
-    <div class="ctrl-cell span-4 no-bottom-border" style="background-color: #222;"><input type="range" id="riskPercentSlider" min="0" max="100" value="40"></div>
+    <div class="ctrl-cell span-4 no-bottom-border" style="background-color: #222;"><input type="range" id="riskPercentSlider" min="0" max="100" step="1" value="40"></div>
 </div>
 
 <script>
@@ -183,7 +210,7 @@
     const riskLabel = document.getElementById('riskLabel');
 
     const COLOR_MAP = {
-        'Black': '#aaaaaa', // Light Grey for Dark Mode readability
+        'Black': '#aaaaaa',
         'Blue': '#4da6ff',
         'Green': '#32cd32',
         'Yellow': '#ffd700',
@@ -214,12 +241,12 @@
     });
 
     function applyResultColor(el, color) {
-        el.className = 'cell-value';
+        // Only update style to preserve layout classes (e.g. .cell)
         el.style.color = COLOR_MAP[color] || color;
     }
 
     function applyLabelAndSliderColor(labelEl, sliderEl, colorStr) {
-        labelEl.className = 'ctrl-cell ctrl-badge';
+        // Only update style to preserve layout classes
         labelEl.style.color = COLOR_MAP[colorStr] || colorStr;
         sliderEl.style.accentColor = COLOR_MAP[colorStr] || colorStr;
     }
@@ -252,6 +279,12 @@
         return nCr(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k);
     }
 
+    function displayValue(val) {
+        if (val > 99.9)
+         return val.toFixed(0);
+        return val.toFixed(1);
+    }
+
     function update() {
         let pool = parseInt(poolBox.value);
         let rr = parseInt(rrBox.value);
@@ -262,10 +295,9 @@
 
         // Dice Pool Labels & Slider Color
         let poolColor = 'Black';
-        if (pool <= 3) { poolLabel.innerText = "Incompétent"; poolColor = "Black"; }
-        else if (pool <= 6) { poolLabel.innerText = "Débutant"; poolColor = "Purple"; }
+        if (pool <= 5) { poolLabel.innerText = "Novice"; poolColor = "Black"; }
         else if (pool <= 8) { poolLabel.innerText = "Compétent"; poolColor = "Red"; }
-        else if (pool <= 11) { poolLabel.innerText = "Pro"; poolColor = "Yellow"; }
+        else if (pool <= 11) { poolLabel.innerText = "Expert"; poolColor = "Yellow"; }
         else if (pool <= 14) { poolLabel.innerText = "Elite"; poolColor = "Green"; }
         else { poolLabel.innerText = "Dieu"; poolColor = "Blue"; }
         applyLabelAndSliderColor(poolLabel, poolSlider, poolColor);
@@ -278,7 +310,7 @@
         let sit = parseInt(sitSlider.value);
         let p_succ = (sit === 3) ? 3/6 : (sit === 2) ? 2/6 : 1/6;
         let sitColor = (sit === 3) ? "Green" : (sit === 2) ? "Black" : "Red";
-        sitLabel.innerText = (sit === 3) ? "Avantage" : (sit === 2) ? "Neutre" : "Désavantage";
+        sitLabel.innerText = (sit === 3) ? "Avantage" : (sit === 2) ? "Neutre" : "Désavant.";
         applyLabelAndSliderColor(sitLabel, sitSlider, sitColor);
 
         // Risk Level Matrix & Slider Color
@@ -334,10 +366,10 @@
         const domSucc6 = document.getElementById('succ6');
         const domSucc8 = document.getElementById('succ8');
 
-        domSucc2.innerText = (cS[2]*100).toFixed(1) + "%"; applyResultColor(domSucc2, getSuccessColor(cS[2]*100));
-        domSucc4.innerText = (cS[4]*100).toFixed(1) + "%"; applyResultColor(domSucc4, getSuccessColor(cS[4]*100));
-        domSucc6.innerText = (cS[6]*100).toFixed(1) + "%"; applyResultColor(domSucc6, getSuccessColor(cS[6]*100));
-        domSucc8.innerText = (cS[8]*100).toFixed(1) + "%"; applyResultColor(domSucc8, getSuccessColor(cS[8]*100));
+        domSucc2.innerText = displayValue(cS[2]*100); applyResultColor(domSucc2, getSuccessColor(cS[2]*100));
+        domSucc4.innerText = displayValue(cS[4]*100); applyResultColor(domSucc4, getSuccessColor(cS[4]*100));
+        domSucc6.innerText = displayValue(cS[6]*100); applyResultColor(domSucc6, getSuccessColor(cS[6]*100));
+        domSucc8.innerText = displayValue(cS[8]*100); applyResultColor(domSucc8, getSuccessColor(cS[8]*100));
 
         // Calculate Cumulative Failure Probabilities (Complications)
         let fP = {0:0, 1:0, 2:0, 3:0};
@@ -355,10 +387,10 @@
         const domFail2 = document.getElementById('fail2');
         const domFail3 = document.getElementById('fail3');
 
-        domFail0.innerText = (fP[0]*100).toFixed(1) + "%"; applyResultColor(domFail0, getSuccessColor(fP[0]*100));
-        domFail1.innerText = (fP[1]*100).toFixed(1) + "%"; applyResultColor(domFail1, getFailColor(fP[1]*100));
-        domFail2.innerText = (fP[2]*100).toFixed(1) + "%"; applyResultColor(domFail2, getFailColor(fP[2]*100));
-        domFail3.innerText = (fP[3]*100).toFixed(1) + "%"; applyResultColor(domFail3, getFailColor(fP[3]*100));
+        domFail0.innerText = displayValue(fP[0]*100) ; applyResultColor(domFail0, getSuccessColor(fP[0]*100));
+        domFail1.innerText = displayValue(fP[1]*100) ; applyResultColor(domFail1, getFailColor(fP[1]*100));
+        domFail2.innerText = displayValue(fP[2]*100) ; applyResultColor(domFail2, getFailColor(fP[2]*100));
+        domFail3.innerText = displayValue(fP[3]*100) ; applyResultColor(domFail3, getFailColor(fP[3]*100));
     }
     update();
 </script>

@@ -13,7 +13,7 @@ A minimalist, web-based probability calculator tailored for the Shadowrun Anarch
 ## Usage
 **Live Access:** You can use the calculator directly via the GitHub Pages Link Here:
 
-https://github.com/scardin/SRA2-RiskCalculator
+https://scardin.github.io/SRA2-RiskCalculator/
 
 **Local Use:** Alternatively, clone the repository and open the `index.html` file in any modern web browser. The calculator operates entirely client-side, requiring no external dependencies, server-side processing, or build steps.
 
