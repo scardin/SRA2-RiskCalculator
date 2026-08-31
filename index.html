@@ -2,253 +2,418 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c">
 <title>SRA2 Calculateur de Risque</title>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Roboto:wght@400;700&display=swap');
+    /* Typography and palette follow "The Anarchist Style" Homebrewery theme by adasmael */
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;600;700&display=swap');
+    @import url('https://fonts.cdnfonts.com/css/examples-of-erosion');
+
+    :root {
+        /* Theme palette */
+        --sr-white: #f4f4f1;
+        --sr-off-white: #e8e8e3;
+        --sr-ink: #16171a;
+        --sr-black: #0a0a0c;
+        --sr-panel: #141418;
+        --sr-panel-light: #1d1e23;
+        --sr-gold: #f2be19;
+        --sr-gold-dark: #c99e12;
+        --sr-indigo: #302f5f;
+        --sr-indigo-light: #46447f;
+        --sr-gray: #8a8a8f;
+        --sr-red: #c8232f;
+        --sr-line: #2c2c33;
+        --sr-track: #3a3a42;
+        --sr-shadow: rgba(0, 0, 0, 0.45);
+
+        /* Homogeneous type scale: every element of the same role shares one size.
+           Sizes track both viewport axes so the layout never scrolls in portrait. */
+        --fs-title: clamp(1.05rem, min(6.4vw, 5.2vh), 3rem);
+        --fs-head:  clamp(0.68rem, min(3.3vw, 2.1vh), 1.05rem);
+        --fs-key:   clamp(0.7rem, min(3.4vw, 2.2vh), 1.1rem);
+        --fs-label: clamp(0.72rem, min(3.6vw, 2.3vh), 1.15rem);
+        --fs-value: clamp(0.95rem, min(4.8vw, 3.0vh), 1.7rem);
+        --fs-ctrl:  clamp(0.78rem, min(3.7vw, 2.4vh), 1.25rem);
+        --fs-badge: clamp(0.7rem, min(3.4vw, 2.2vh), 1.1rem);
+
+        /* Slider metrics */
+        --trk: clamp(6px, 1.2vh, 10px);
+        --thm: clamp(15px, 2.8vh, 22px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
 
     body {
-        background-color: #121212;
-        color: #f0f0f0;
-        font-family: 'Roboto', sans-serif;
         margin: 0;
-        padding: 20px;
+        background-color: var(--sr-black);
+        /* Faint tech grid + gold bloom, pure CSS so the page stays dependency-free */
+        background-image:
+            radial-gradient(ellipse at 50% -10%, rgba(242, 190, 25, 0.10), transparent 60%),
+            linear-gradient(rgba(242, 190, 25, 0.035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(242, 190, 25, 0.035) 1px, transparent 1px);
+        background-size: 100% 100%, 34px 34px, 34px 34px;
+        color: var(--sr-white);
+        font-family: 'Barlow', 'Helvetica Neue', sans-serif;
+        -webkit-text-size-adjust: 100%;
         display: flex;
-        flex-direction: column;
         align-items: center;
+        justify-content: center;
+        overflow: hidden;
     }
 
-    .container {
-        max-width: 800px;
+    .app {
         width: 100%;
-        margin-bottom: 25px;
+        max-width: 820px;
+        height: 100vh;
+        height: 100dvh;
+        max-height: 1000px;
+        padding: clamp(6px, 1.8vmin, 18px);
+        padding-top: max(clamp(6px, 1.8vmin, 18px), env(safe-area-inset-top));
+        padding-bottom: max(clamp(6px, 1.8vmin, 18px), env(safe-area-inset-bottom));
+        display: flex;
+        flex-direction: column;
+        gap: clamp(6px, 1.8vmin, 16px);
     }
-    
-    .title-container {
+
+    /* -- Title ---------------------------------------------------------- */
+    .title-block {
+        flex: 0 0 auto;
+        position: relative;
         text-align: center;
-        background-color: #1e1e1e;
-        border-top: 4px solid #d4af37;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.8);
-        padding: 15px 20px;
+        padding-bottom: clamp(4px, 1.2vmin, 10px);
+        border-bottom: 3px solid var(--sr-gold);
+    }
+    .title-block::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -3px;
+        width: clamp(40px, 12vw, 90px);
+        height: 3px;
+        transform: translateX(-50%);
+        background: var(--sr-black);
     }
 
     h1.main-title {
-        font-family: 'Oswald', sans-serif;
-        color: #d4af37;
-        text-transform: uppercase;
-        padding-bottom: 10px;
         margin: 0;
-        letter-spacing: 1px;
+        font-family: 'Examples of erosion', 'Rajdhani', 'Arial Narrow', sans-serif;
+        font-weight: 400;
+        font-size: var(--fs-title);
+        line-height: 1.05;
+        white-space: nowrap;
+        color: var(--sr-gold);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-shadow: 0 3px 10px rgba(0, 0, 0, 0.8);
     }
 
+    /* -- Panels --------------------------------------------------------- */
+    .panel {
+        min-height: 0;
+        min-width: 0;
+        box-shadow: 0 4px 14px var(--sr-shadow);
+    }
+
+    /* Grid gaps double as hairline rules: children paint their own background,
+       the grid background shows through the 1px gaps. */
     .results-container {
-        display: flex;
-        width: 100%;
-        border: 2px solid #d4af37;
-        background-color: #1e1e1e;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.8);
+        flex: 38 1 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px;
+        background: var(--sr-gold);
+        border: 1px solid var(--sr-gold);
+        border-top-width: 3px;
     }
 
     .results-half {
-        flex: 1;
+        min-height: 0;
+        min-width: 0;
         display: grid;
         grid-template-columns: auto 1fr auto;
-        border-right: 2px solid #d4af37;
-    }
-    .results-half:last-child { border-right: none; }
-
-    .header-cell {
-        grid-column: span 3;
-        text-align: center;
-        background-color: #2a2a2a;
-        border-bottom: 2px solid #d4af37;
-        padding: 10px;
-        font-family: 'Oswald', sans-serif;
-        font-size: 1.0em;
-        color: #d4af37;
-        text-transform: uppercase;
+        grid-template-rows: auto repeat(4, 1fr);
+        gap: 1px;
+        background: var(--sr-line);
     }
 
     .cell {
-        padding: 10px;
-        border-bottom: 1px solid #444;
-        border-right: 1px solid #444;
+        min-width: 0;
+        background: var(--sr-panel);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: 'Oswald', sans-serif;
-    }
-    .cell:nth-child(3n) { border-right: none; }
-    .row-last .cell { border-bottom: none; }
-    
-    .cell-target { font-weight: bold; background-color: #2a2a2a; color: #fff; }
-    .cell-label { text-transform: uppercase; font-weight: bold; justify-content: flex-start; padding-left: 15px; }
-    .cell-value { 
-        font-family: 'Roboto', sans-serif; 
-        font-weight: bold; 
-        font-size: 1.2em;
-        align-items: center;
-        justify-content: center; 
-        text-align: center;
+        padding: 0 clamp(4px, 1.4vmin, 12px);
+        overflow: hidden;
     }
 
+    .header-cell {
+        grid-column: 1 / -1;
+        background: var(--sr-indigo);
+        color: var(--sr-gold);
+        font-family: 'Rajdhani', 'Arial Narrow', sans-serif;
+        font-weight: 700;
+        font-size: var(--fs-head);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        padding: clamp(4px, 1.1vh, 10px) 0;
+    }
+
+    .cell-target {
+        background: var(--sr-panel-light);
+        color: var(--sr-off-white);
+        font-family: 'Chakra Petch', 'Consolas', monospace;
+        font-weight: 700;
+        font-size: var(--fs-key);
+    }
+
+    .cell-label {
+        justify-content: flex-start;
+        font-family: 'Rajdhani', 'Arial Narrow', sans-serif;
+        font-weight: 700;
+        font-size: var(--fs-label);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        white-space: nowrap;
+    }
+
+    .cell-value {
+        justify-content: flex-end;
+        font-family: 'Chakra Petch', 'Consolas', monospace;
+        font-weight: 700;
+        font-size: var(--fs-value);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    /* -- Controls ------------------------------------------------------- */
     .controls-grid {
+        flex: 62 1 0;
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        border: 2px solid #4b0082;
-        background-color: #1e1e1e;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.8);
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: 1.35fr 0.85fr 1.35fr 0.85fr 1.35fr 0.85fr;
+        gap: 1px;
+        background: var(--sr-line);
+        border: 1px solid var(--sr-indigo-light);
+        border-top-width: 3px;
     }
 
     .ctrl-cell {
-        border-bottom: 1px solid #444;
-        border-right: 1px solid #444;
-        padding: 15px 10px;
+        min-width: 0;
+        background: var(--sr-panel);
         display: flex;
         align-items: center;
         justify-content: center;
         text-align: center;
+        padding: clamp(4px, 1.2vmin, 12px) clamp(3px, 1vmin, 10px);
+        overflow: hidden;
     }
-    .ctrl-cell:nth-child(4n), .span-4, .span-2:nth-child(even) { border-right: none; }
-    
+
     .span-2 { grid-column: span 2; }
     .span-4 { grid-column: span 4; }
-    .no-bottom-border { border-bottom: none; }
 
     .ctrl-label {
-        font-family: 'Oswald', sans-serif;
-        font-size: 1.2em;
+        font-family: 'Rajdhani', 'Arial Narrow', sans-serif;
+        font-size: var(--fs-ctrl);
+        font-weight: 700;
+        line-height: 1.1;
         text-transform: uppercase;
-        color: #fff;
-        font-weight: bold;
+        letter-spacing: 0.04em;
+        color: var(--sr-white);
     }
-    
+
     .ctrl-badge {
-        font-family: 'Oswald', sans-serif;
-        font-size: 1.0em;
-        font-weight: bold;
+        font-family: 'Rajdhani', 'Arial Narrow', sans-serif;
+        font-size: var(--fs-badge);
+        font-weight: 700;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        background-color: transparent;
-        transition: color 0.3s;
+        white-space: nowrap;
+        transition: color 0.25s;
     }
 
-    input[type="number"] {
-        width: 100%;
-        max-width: 60px;
-        background-color: #121212;
-        color: #d4af37;
-        border: 1px solid #d4af37;
-        text-align: center;
-        font-family: 'Oswald', sans-serif;
-        font-size: 1.2em;
-        padding: 5px;
+    /* Read-only value plates (replaced the former number inputs) */
+    .ctrl-value {
+        font-family: 'Chakra Petch', 'Consolas', monospace;
+        font-size: var(--fs-value);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--sr-gold);
+        background: var(--sr-black);
+        border: 1px solid var(--sr-gold);
+        border-radius: 2px;
+        min-width: 2.4em;
+        padding: clamp(2px, 0.7vh, 8px) clamp(6px, 1.4vmin, 14px);
+        line-height: 1.15;
     }
 
+    .slider-cell { background: var(--sr-ink); }
+
+    /* -- Sliders -------------------------------------------------------- */
     input[type="range"] {
-        width: 90%;
+        --acc: var(--sr-gray);
+        --fill: 50%;
+        -webkit-appearance: none;
+        appearance: none;
+        width: 92%;
+        height: var(--thm);
+        margin: 0;
         background: transparent;
-        transition: accent-color 0.3s;
+        cursor: pointer;
+        touch-action: none;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+        height: var(--trk);
+        border-radius: 999px;
+        background: linear-gradient(to right, var(--acc) 0 var(--fill), var(--sr-track) var(--fill) 100%);
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: var(--thm);
+        height: var(--thm);
+        margin-top: calc((var(--trk) - var(--thm)) / 2);
+        border-radius: 50%;
+        background: var(--acc);
+        border: 2px solid var(--sr-black);
+        box-shadow: 0 0 0 1px var(--acc), 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    input[type="range"]::-moz-range-track {
+        height: var(--trk);
+        border-radius: 999px;
+        background: var(--sr-track);
+    }
+    input[type="range"]::-moz-range-progress {
+        height: var(--trk);
+        border-radius: 999px;
+        background: var(--acc);
+    }
+    input[type="range"]::-moz-range-thumb {
+        width: var(--thm);
+        height: var(--thm);
+        border-radius: 50%;
+        background: var(--acc);
+        border: 2px solid var(--sr-black);
+        box-shadow: 0 0 0 1px var(--acc), 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    input[type="range"]:focus { outline: none; }
+    input[type="range"]:focus-visible {
+        outline: 2px solid var(--sr-gold);
+        outline-offset: 4px;
+    }
+
+    /* Landscape phones: reclaim vertical space by shrinking the title band */
+    @media (orientation: landscape) and (max-height: 480px) {
+        :root { --fs-title: clamp(1.1rem, 5.4vh, 1.8rem); }
+        .title-block { padding-bottom: 2px; }
     }
 </style>
 </head>
 <body>
 
-<h1 class="main-title">SRA2: Planificateur</h1>
+<div class="app">
 
-<div class="container results-container">
-    <div class="results-half">
-        <div class="header-cell">% Réussite</div>
-        <div class="cell cell-target">2+</div><div class="cell cell-label" style="color: #32cd32;">Facile</div><div class="cell cell-value" id="succ2">0%</div>
-        <div class="cell cell-target">4+</div><div class="cell cell-label" style="color: #ffd700;">Difficile</div><div class="cell cell-value" id="succ4">0%</div>
-        <div class="cell cell-target">6+</div><div class="cell cell-label" style="color: #ff4c4c;">Ardue</div><div class="cell cell-value" id="succ6">0%</div>
-        <div class="cell cell-target row-last">8+</div><div class="cell cell-label row-last" style="color: #ba55d3;">Extreme</div><div class="cell cell-value row-last" id="succ8">0%</div>
+    <div class="title-block">
+        <h1 class="main-title">SRA2: Planificateur</h1>
     </div>
-    <div class="results-half">
-        <div class="header-cell">% Complication</div>
-        <div class="cell cell-target">0</div><div class="cell cell-label" style="color: #32cd32;">Aucune</div><div class="cell cell-value" id="fail0">0%</div>
-        <div class="cell cell-target">1+</div><div class="cell cell-label" style="color: #ffd700;">Mineure</div><div class="cell cell-value" id="fail1">0%</div>
-        <div class="cell cell-target">2+</div><div class="cell cell-label" style="color: #ff4c4c;">Critique</div><div class="cell cell-value" id="fail2">0%</div>
-        <div class="cell cell-target row-last">3+</div><div class="cell cell-label row-last" style="color: #ba55d3;">Désastre</div><div class="cell cell-value row-last" id="fail3">0%</div>
+
+    <div class="panel results-container">
+        <div class="results-half">
+            <div class="cell header-cell">% Réussite</div>
+            <div class="cell cell-target">2+</div><div class="cell cell-label" style="color: #32cd32;">Facile</div><div class="cell cell-value" id="succ2">0.0</div>
+            <div class="cell cell-target">4+</div><div class="cell cell-label" style="color: #f2be19;">Difficile</div><div class="cell cell-value" id="succ4">0.0</div>
+            <div class="cell cell-target">6+</div><div class="cell cell-label" style="color: #ff4c4c;">Ardue</div><div class="cell cell-value" id="succ6">0.0</div>
+            <div class="cell cell-target">8+</div><div class="cell cell-label" style="color: #ba55d3;">Extreme</div><div class="cell cell-value" id="succ8">0.0</div>
+        </div>
+        <div class="results-half">
+            <div class="cell header-cell">% Complication</div>
+            <div class="cell cell-target">0</div><div class="cell cell-label" style="color: #32cd32;">Aucune</div><div class="cell cell-value" id="fail0">0.0</div>
+            <div class="cell cell-target">1+</div><div class="cell cell-label" style="color: #f2be19;">Mineure</div><div class="cell cell-value" id="fail1">0.0</div>
+            <div class="cell cell-target">2+</div><div class="cell cell-label" style="color: #ff4c4c;">Critique</div><div class="cell cell-value" id="fail2">0.0</div>
+            <div class="cell cell-target">3+</div><div class="cell cell-label" style="color: #ba55d3;">Désastre</div><div class="cell cell-value" id="fail3">0.0</div>
+        </div>
     </div>
-</div>
 
-<div class="container controls-grid">
-    <div class="ctrl-cell span-2 ctrl-label">Réserve de dés</div>
-    <div class="ctrl-cell ctrl-badge" id="poolLabel">Débutant</div>
-    <div class="ctrl-cell"><input type="number" id="poolBox" min="1" max="16" value="5"></div>
-    
-    <div class="ctrl-cell span-4" style="background-color: #222;"><input type="range" id="poolSlider" min="1" max="16" step="1" value="5"></div>
+    <div class="panel controls-grid">
+        <div class="ctrl-cell span-2 ctrl-label">Réserve de dés</div>
+        <div class="ctrl-cell ctrl-badge" id="poolLabel">Novice</div>
+        <div class="ctrl-cell"><div class="ctrl-value" id="poolValue">5</div></div>
 
-    <div class="ctrl-cell ctrl-label" style="font-size: 1em;">Réduction<br>de Risque</div>
-    <div class="ctrl-cell"><input type="number" id="rrBox" min="0" max="3" value="0"></div>
-    <div class="ctrl-cell ctrl-label">Situation</div>
-    <div class="ctrl-cell ctrl-badge" id="sitLabel">Neutre</div>
+        <div class="ctrl-cell span-4 slider-cell">
+            <input type="range" id="poolSlider" min="1" max="16" step="1" value="5" aria-label="Réserve de dés">
+        </div>
 
-    <div class="ctrl-cell span-2" style="background-color: #222;"><input type="range" id="rrSlider" min="0" max="3" step="1" value="0"></div>
-    <div class="ctrl-cell span-2" style="background-color: #222; border-right: none;"><input type="range" id="sitSlider" min="1" max="3" step="1" value="2"></div>
+        <div class="ctrl-cell ctrl-label">Réduction<br>de Risque</div>
+        <div class="ctrl-cell"><div class="ctrl-value" id="rrValue">0</div></div>
+        <div class="ctrl-cell ctrl-label">Situation</div>
+        <div class="ctrl-cell ctrl-badge" id="sitLabel">Neutre</div>
 
-    <div class="ctrl-cell span-2 ctrl-label">Dés de risques</div>
-    <div class="ctrl-cell ctrl-badge" id="riskLabel">Normal</div>
-    <div class="ctrl-cell"><input type="number" id="riskBox" min="0" max="16" value="2"></div>
+        <div class="ctrl-cell span-2 slider-cell">
+            <input type="range" id="rrSlider" min="0" max="3" step="1" value="0" aria-label="Réduction de risque">
+        </div>
+        <div class="ctrl-cell span-2 slider-cell">
+            <input type="range" id="sitSlider" min="1" max="3" step="1" value="2" aria-label="Situation">
+        </div>
 
-    <div class="ctrl-cell span-4 no-bottom-border" style="background-color: #222;"><input type="range" id="riskPercentSlider" min="0" max="100" step="1" value="40"></div>
+        <div class="ctrl-cell span-2 ctrl-label">Dés de risques</div>
+        <div class="ctrl-cell ctrl-badge" id="riskLabel">Normal</div>
+        <div class="ctrl-cell"><div class="ctrl-value" id="riskValue">2</div></div>
+
+        <div class="ctrl-cell span-4 slider-cell">
+            <input type="range" id="riskSlider" min="0" max="5" step="1" value="2" aria-label="Dés de risques">
+        </div>
+    </div>
+
 </div>
 
 <script>
     const poolSlider = document.getElementById('poolSlider');
-    const poolBox = document.getElementById('poolBox');
-    const poolLabel = document.getElementById('poolLabel');
-    
+    const poolValue  = document.getElementById('poolValue');
+    const poolLabel  = document.getElementById('poolLabel');
+
     const rrSlider = document.getElementById('rrSlider');
-    const rrBox = document.getElementById('rrBox');
-    
+    const rrValue  = document.getElementById('rrValue');
+
     const sitSlider = document.getElementById('sitSlider');
-    const sitLabel = document.getElementById('sitLabel');
-    
-    const riskPercentSlider = document.getElementById('riskPercentSlider');
-    const riskBox = document.getElementById('riskBox');
-    const riskLabel = document.getElementById('riskLabel');
+    const sitLabel  = document.getElementById('sitLabel');
+
+    const riskSlider = document.getElementById('riskSlider');
+    const riskValue  = document.getElementById('riskValue');
+    const riskLabel  = document.getElementById('riskLabel');
 
     const COLOR_MAP = {
-        'Black': '#aaaaaa',
-        'Blue': '#4da6ff',
-        'Green': '#32cd32',
-        'Yellow': '#ffd700',
-        'Red': '#ff4c4c',
+        'Black':  '#8a8a8f',
+        'Blue':   '#4da6ff',
+        'Green':  '#32cd32',
+        'Yellow': '#f2be19',
+        'Red':    '#ff4c4c',
         'Purple': '#ba55d3'
     };
 
-    function syncDirect(slider, box) {
-        slider.addEventListener('input', () => { box.value = slider.value; update(); });
-        box.addEventListener('input', () => { slider.value = box.value; update(); });
-    }
-    syncDirect(poolSlider, poolBox);
-    syncDirect(rrSlider, rrBox);
-    sitSlider.addEventListener('input', update);
-
-    riskPercentSlider.addEventListener('input', () => {
-        let pool = parseInt(poolBox.value);
-        riskBox.value = Math.round((parseInt(riskPercentSlider.value) / 100) * pool);
-        update();
-    });
-
-    riskBox.addEventListener('input', () => {
-        let pool = parseInt(poolBox.value);
-        let val = parseInt(riskBox.value);
-        if (val > pool) { val = pool; riskBox.value = pool; }
-        riskPercentSlider.value = Math.round((val / pool) * 100);
-        update();
-    });
+    [poolSlider, rrSlider, sitSlider, riskSlider].forEach(s => s.addEventListener('input', update));
 
     function applyResultColor(el, color) {
         // Only update style to preserve layout classes (e.g. .cell)
         el.style.color = COLOR_MAP[color] || color;
     }
 
+    // Paints a slider: accent colour plus the filled portion left of the thumb.
+    function paintSlider(sliderEl, colorStr) {
+        const min = parseFloat(sliderEl.min), max = parseFloat(sliderEl.max);
+        const pct = max > min ? ((parseFloat(sliderEl.value) - min) / (max - min)) * 100 : 0;
+        sliderEl.style.setProperty('--acc', COLOR_MAP[colorStr] || colorStr);
+        sliderEl.style.setProperty('--fill', pct + '%');
+    }
+
     function applyLabelAndSliderColor(labelEl, sliderEl, colorStr) {
         // Only update style to preserve layout classes
         labelEl.style.color = COLOR_MAP[colorStr] || colorStr;
-        sliderEl.style.accentColor = COLOR_MAP[colorStr] || colorStr;
+        paintSlider(sliderEl, colorStr);
     }
 
     function getSuccessColor(p) {
@@ -286,12 +451,17 @@
     }
 
     function update() {
-        let pool = parseInt(poolBox.value);
-        let rr = parseInt(rrBox.value);
-        let risk = parseInt(riskBox.value);
-        
-        if (risk > pool) { risk = pool; riskBox.value = pool; riskPercentSlider.value = 100; } 
-        else { riskPercentSlider.value = Math.round((risk / pool) * 100); }
+        let pool = parseInt(poolSlider.value);
+        let rr = parseInt(rrSlider.value);
+
+        // Risk dice can never exceed the pool: the risk slider tracks the pool size.
+        riskSlider.max = pool;
+        let risk = Math.min(parseInt(riskSlider.value), pool);
+        riskSlider.value = risk;
+
+        poolValue.innerText = pool;
+        rrValue.innerText = rr;
+        riskValue.innerText = risk;
 
         // Dice Pool Labels & Slider Color
         let poolColor = 'Black';
@@ -304,7 +474,7 @@
 
         // RR Slider Color Mapping
         const rrColor = rr === 0 ? "Red" : rr === 1 ? "Yellow" : rr === 2 ? "Green" : "Blue";
-        rrSlider.style.accentColor = COLOR_MAP[rrColor];
+        paintSlider(rrSlider, rrColor);
 
         // Situation Labels & Slider Color
         let sit = parseInt(sitSlider.value);
@@ -337,10 +507,10 @@
             if (risk <= 3) { rLbl = "Aucun"; rCol = "Black"; }
             else if (risk <= 11) { rLbl = "Faible"; rCol = "Blue"; }
             else if (risk <= 14) { rLbl = "Normal"; rCol = "Green"; }
-            else { rLbl = "Fort"; rCol = "Yellow"; } 
+            else { rLbl = "Fort"; rCol = "Yellow"; }
         }
         riskLabel.innerText = rLbl;
-        applyLabelAndSliderColor(riskLabel, riskPercentSlider, rCol);
+        applyLabelAndSliderColor(riskLabel, riskSlider, rCol);
 
         // Calculate Success Probabilities
         let std = pool - risk;
